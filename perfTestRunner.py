@@ -68,7 +68,11 @@ def save_results(data):
     """Save current test results to the report file."""
     if os.path.exists(reportFile)  and os.path.getsize(reportFile) > 0:
         with open(reportFile, "r") as f:
-            existing_data = json.load(f)
+            content = json.load(f)
+            if isinstance(content, dict):
+                existing_data = [content]
+            else:
+                existing_data = content
     else:
         existing_data = []
 

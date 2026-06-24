@@ -1,3 +1,4 @@
+import collections
 import subprocess
 import json
 import time
@@ -51,16 +52,29 @@ def load_results():
     if os.path.exists(reportFile):
         with open(reportFile, "r") as f:
             try:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, list) and len(data)>0:
+                    return data[-1]
+                elif isinstance(data, dict):
+                    return data
+                return {}
             except json.JSONDecodeError:
                 return {}
     return {}
 
 
+
 def save_results(data):
     """Save current test results to the report file."""
+    if os.path.exists(reportFile)  and os.path.getsize(reportFile) > 0:
+        with open(reportFile, "r") as f:
+            existing_data = json.load(f)
+    else:
+        existing_data = []
+
+    existing_data.append(data)
     with open(reportFile, "w") as f:
-        json.dump(data, f, indent=4)
+        json.dump(existing_data, f, indent=4)
     print(f"Results saved to {reportFile}")
 
 

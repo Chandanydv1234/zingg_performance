@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - fix-perf-runner-json
 
 permissions:
   contents: write
@@ -35,7 +34,7 @@ jobs:
       - name: Commit and push the updated chart
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "[EMAIL_ADDRESS]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add performance_chart.png *_report.csv
           git commit -m "updated performance chart [skip ci]" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref_name }}

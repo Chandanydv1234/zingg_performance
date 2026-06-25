@@ -6,6 +6,8 @@ on:
       - main
       - fix-perf-runner-json
 
+permissions:
+  contents: write
 
 jobs:
   run-and-plot:
@@ -38,4 +40,4 @@ jobs:
           git config --global user.email "[EMAIL_ADDRESS]"
           git add zingg_performance/performance_chart.png zingg_performance/*_report.csv
           git commit -m "updated performance chart [skip ci]" || echo "No changes to commit"
-          git push origin main
+          git push origin HEAD:${{ github.ref_name }}

@@ -1,0 +1,13 @@
+{
+  "testName": "Dummy Performance Test",
+  "zinggScript": "echo 'Mock Zingg Command'",
+  "propertyFile": "dummy.properties",
+  "reportFile": "dummy_report.csv",
+  "directory": ".",
+  "setup": null,
+  "teardown": null,
+  "tests": {
+    "train": "{zinggScript} train {propertyFile}",
+    "match": "{zinggScript} match {propertyFile}"
+  }
+}

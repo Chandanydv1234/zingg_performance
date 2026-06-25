@@ -1,6 +1,7 @@
 import collections
 import subprocess
 import json
+import csv
 import time
 import os
 from datetime import date, datetime
@@ -49,39 +50,49 @@ os.chdir(os.path.abspath(workingDirectory))
 
 def load_results():
     """Load previous test results if available."""
-    if os.path.exists(reportFile):
+    if os.path.exists(reportFile) and os.path.getsize(reportFile) > 0:
         with open(reportFile, "r") as f:
             try:
-                data = json.load(f)
-                if isinstance(data, list) and len(data)>0:
-                    return data[-1]
-                elif isinstance(data, dict):
-                    return data
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                last_row = rows[-1]
+                if len(rows) > 0:
+                    return {
+                        "results": {
+                            "train": float(last_row["train"]),
+                            "match": float(last_row["match"])
+                        }
+                    }
                 return {}
             except json.JSONDecodeError:
                 return {}
     return {}
 
 
-
 def save_results(data):
-    """Save current test results to the report file."""
-    if os.path.exists(reportFile)  and os.path.getsize(reportFile) > 0:
-        with open(reportFile, "r") as f:
-            content = json.load(f)
-            if isinstance(content, dict):
-                existing_data = [content]
-            else:
-                existing_data = content
+    """Save current test results to the report file"""
+    if os.path.exists(reportFile) and os.path.getsize(reportFile) > 0:
+        with open(reportFile, "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                data["date"],
+                data["time"],
+                data["test"],
+                data["results"].get("train", 0),
+                data["results"].get("match", 0)
+            ])
     else:
-        existing_data = []
-
-    existing_data.append(data)
-    with open(reportFile, "w") as f:
-        json.dump(existing_data, f, indent=4)
-    print(f"Results saved to {reportFile}")
-
-
+        with open(reportFile, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["date", "time", "test", "train", "match"])
+            writer.writerow([
+                data["date"],
+                data["time"],
+                data["test"],
+                data["results"].get("train", 0),
+                data["results"].get("match", 0)
+            ])
+    
 def run_phase(phases, commandLine):
     """Run a single test phase."""
     print(f"Running phase - {phases}")

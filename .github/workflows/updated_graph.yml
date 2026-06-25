@@ -1,0 +1,40 @@
+name: Update performance Graph
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  run-and-plot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas matplotlib
+
+      - name: Run performance tests
+        run: |
+          cd zingg_performance
+          INPUT=dummy_config.json python3 perfTestRunner.py
+
+      - name: Plot results
+        run: |
+          cd zingg_performance
+          python3 plot_result.py
+
+      - name: Commit and push the updated chart
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "[EMAIL_ADDRESS]"
+          git add zingg_performance/performance_chart.png zingg_performance/*_report.csv
+          git commit -m "updated performance chart [skip ci]" || echo "No changes to commit"
+          git push origin main

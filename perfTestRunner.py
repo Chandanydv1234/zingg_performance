@@ -50,48 +50,64 @@ os.chdir(os.path.abspath(workingDirectory))
 
 def load_results():
     """Load previous test results if available."""
-    if os.path.exists(reportFile) and os.path.getsize(reportFile) > 0:
-        with open(reportFile, "r") as f:
-            try:
+
+    results = {}
+
+    for phase in tests.keys():
+        phase_file = f"{phase}_report.csv"
+
+        if os.path.exists(phase_file) and os.path.getsize(phase_file)>0:
+            with open(phase_file, "r") as f:
                 reader = csv.DictReader(f)
                 rows = list(reader)
-                last_row = rows[-1]
-                if len(rows) > 0:
-                    return {
-                        "results": {
-                            "train": float(last_row["train"]),
-                            "match": float(last_row["match"])
-                        }
-                    }
-                return {}
-            except json.JSONDecodeError:
-                return {}
-    return {}
+                if rows:
+                    last_row = rows[-1]
 
+                    try:
+                        results[phase] = float(last_row["duration"])
+                    except ValueError:
+                        results[phase] = last_row["duration"]
+    return {"results": results}
 
 def save_results(data):
     """Save current test results to the report file"""
-    if os.path.exists(reportFile) and os.path.getsize(reportFile) > 0:
-        with open(reportFile, "a", newline="") as f:
+
+    current_year = str(date.today().year)
+
+    for phase, duration in data["results"].items():
+        phase_file = f"{phase}_report.csv"
+
+        # -----YEARLY ROLLOVER CHECK---
+        if os.path.exists(phase_file) and os.path.getsize(phase_file)>0:
+            with open(phase_file, "r") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                if rows:
+                    last_row = rows[-1]
+                    last_run_year = last_row["date"].split("-")[0]
+
+                    if current_year != last_run_year:
+                        archive_file = f"{phase}_report_{last_run_year}.csv"
+                        os.rename(phase_file, archive_file)
+                        print(f"Year changed! Archived {phase_file} to {archive_file}")   
+
+        file_exists = os.path.exists(phase_file) and os.path.getsize(phase_file)>0
+
+        with open(phase_file, "a", newline="") as f:
             writer = csv.writer(f)
+
+            if not file_exists:
+                writer.writerow(["date", "time", "test", "duration"])
+
             writer.writerow([
                 data["date"],
                 data["time"],
                 data["test"],
-                data["results"].get("train", 0),
-                data["results"].get("match", 0)
+                duration
             ])
-    else:
-        with open(reportFile, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["date", "time", "test", "train", "match"])
-            writer.writerow([
-                data["date"],
-                data["time"],
-                data["test"],
-                data["results"].get("train", 0),
-                data["results"].get("match", 0)
-            ])
+
+        print(f"Results for {phase} saved to {phase_file}")
+
     
 def run_phase(phases, commandLine):
     """Run a single test phase."""

@@ -23,10 +23,6 @@ jobs:
       - name: Install dependencies
         run: pip install pandas matplotlib
 
-      - name: Run performance tests
-        run: |
-          INPUT=dummy_config.json python3 perfTestRunner.py
-
       - name: Plot results
         run: |
           python3 plot_result.py

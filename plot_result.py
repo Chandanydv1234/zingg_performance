@@ -24,9 +24,18 @@ def generate_chart():
     # 1. Load configuration metadata
     config_path = os.environ.get("INPUT", "dummy_config.json")
     if not os.path.exists(config_path):
-        alternatives = sorted(glob.glob("dummy_config*.json"))
-        if alternatives:
-            config_path = alternatives[0]
+        json_files = glob.glob("*.json")
+        configs = []
+        for jf in json_files:
+            try:
+                with open(jf, "r") as f:
+                    data = json.load(f)
+                    if "tests" in data and "testName" in data:
+                        configs.append(jf)
+            except Exception:
+                pass
+        if configs:
+            config_path = sorted(configs)[0]
     pc_specs = {}
     data_specs = {}
     

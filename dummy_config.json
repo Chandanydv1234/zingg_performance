@@ -2,21 +2,13 @@
   "testName": "Dummy Performance Test",
   "zinggScript": "echo 'Mock Zingg Command'",
   "propertyFile": "dummy.properties",
-  "reportFile": "dummy_report.csv",
+  "reportFile": "dummy_report.json",
   "directory": ".",
   "setup": null,
   "teardown": null,
   "tests": {
     "train": "{zinggScript} train {propertyFile}",
     "match": "{zinggScript} match {propertyFile}"
-  },
-  "pcSpecs": {
-    "OS": "Ubuntu 22.04 LTS",
-    "CPU": "Intel Core i7-12700K · 12 cores",
-    "RAM": "32 GB DDR5",
-    "Storage": "1 TB NVMe SSD",
-    "Spark": "v3.4.1 | Python 3.10",
-    "Java": "OpenJDK 17"
   },
   "dataSpecs": {
     "Dataset": "Customer Master",

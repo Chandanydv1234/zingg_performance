@@ -23,6 +23,10 @@ def format_duration(seconds):
 def generate_chart():
     # 1. Load configuration metadata
     config_path = os.environ.get("INPUT", "dummy_config.json")
+    if not os.path.exists(config_path):
+        alternatives = sorted(glob.glob("dummy_config*.json"))
+        if alternatives:
+            config_path = alternatives[0]
     pc_specs = {}
     data_specs = {}
     

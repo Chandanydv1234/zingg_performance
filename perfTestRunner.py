@@ -78,7 +78,7 @@ def load_test_config():
 # Load configuration
 config = load_test_config()
 testName = config["testName"]
-test_prefix = re.sub(r'\W+', '_', testName).strip('_').lower()
+test_prefix = re.sub(r'\W+', '_', os.path.splitext(os.path.basename(INPUT_FILE))[0]).strip('_').lower()
 zinggScript = config["zinggScript"]
 propertyFile = config["propertyFile"]
 reportFile = config["reportFile"]

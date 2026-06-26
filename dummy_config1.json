@@ -1,5 +1,5 @@
 {
-  "testName": "ncVoters_5M",
+  "testName": "Dummy Performance Test",
   "zinggScript": "echo 'Mock Zingg Command'",
   "propertyFile": "dummy.properties",
   "reportFile": "dummy_report.json",

@@ -21,9 +21,8 @@ def format_duration(seconds):
     return f"{seconds:.1f} s"
 
 def generate_chart():
-    # 1. Load configuration metadata
-    config_path = os.environ.get("INPUT", "dummy_config.json")
-    if not os.path.exists(config_path):
+    config_path = os.environ.get("INPUT")
+    if not config_path or not os.path.exists(config_path):
         json_files = glob.glob("*.json")
         configs = []
         for jf in json_files:
@@ -80,7 +79,6 @@ def generate_chart():
     all_datasets = sorted(set(d for d, _ in series.keys()))
     total_runs = max(len(df) for df in series.values())
 
-    # 3. Calculate Run Summary statistics (aggregate across all datasets)
     def concat_phase(phase_name):
         frames = [df for (d, p), df in series.items() if p == phase_name]
         return pd.concat(frames, ignore_index=True) if frames else None
@@ -94,16 +92,15 @@ def generate_chart():
     best_match_sec = (match_all["duration"].min() * 60) if match_all is not None else 0.0
     ratio = (avg_train_sec / avg_match_sec) if avg_match_sec > 0 else 0.0
 
-    # 4. Set up the figure & dark styles
     plt.rcParams['font.family'] = 'sans-serif'
     fig = plt.figure(figsize=(11, 7.5), facecolor='#0b0b12')
     
-    # Grid Spec for plot (top) and specifications/summary (bottom)
+
     gs = fig.add_gridspec(2, 1, height_ratios=[5, 2], hspace=0.3)
     ax = fig.add_subplot(gs[0])
     ax.set_facecolor('#10111d')
 
-    # Color by phase (semantic), line style + marker by dataset
+    
     PHASE_COLORS = {"train": "#a855f7", "match": "#f97316"}
     PHASE_ANNOT  = {"train": (8, '#d8b4fe', 'semibold'), "match": (-12, '#ffedd5', 'normal')}
     DATASET_LINESTYLES = ["-", "--", "-."]
@@ -111,7 +108,7 @@ def generate_chart():
 
     dataset_idx = {d: i for i, d in enumerate(all_datasets)}
 
-    # 5. Plot each (dataset, phase) series
+    
     for (dataset, phase), df in sorted(series.items()):
         color     = PHASE_COLORS.get(phase, "#06b6d4")
         idx       = dataset_idx[dataset]
@@ -132,7 +129,7 @@ def generate_chart():
                         textcoords="offset points", xytext=(0, offset),
                         ha='center', color=annot_color, fontsize=8, fontweight=weight)
 
-    # 6. Customize axes visual design
+    
     ax.set_title("Zingg Performance History", color='#ffffff', fontsize=13, pad=15, fontweight='bold')
     ax.set_ylabel("Duration (minutes)", color='#8e8f9e', fontsize=9.5)
     ax.set_xlabel("Execution Time", color='#8e8f9e', fontsize=9.5)
@@ -140,16 +137,16 @@ def generate_chart():
     ax.tick_params(axis='both', colors='#8e8f9e', labelsize=8.5)
     ax.grid(True, color='#222332', linestyle=':', linewidth=0.8)
 
-    # Hide unnecessary borders
+    
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
     for spine in ['left', 'bottom']:
         ax.spines[spine].set_color('#222332')
 
-    # Legend
+    
     ax.legend(facecolor='#151625', edgecolor='#222332', labelcolor='#ffffff', loc='upper right', framealpha=0.9)
 
-    # Headers
+    
     fig.text(0.06, 0.95, "ZINGG", color='#ffffff', fontsize=15, fontweight='black', alpha=0.95)
     fig.text(0.125, 0.953, "·  Performance Report", color='#a855f7', fontsize=10.5, alpha=0.85)
     

@@ -1,5 +1,6 @@
 date,time,test,duration
-2026-06-26,18:52:16,Dummy Performance Test,0.0
-2026-06-26,18:53:14,Dummy Performance Test,0.0
-2026-06-26,18:53:31,Dummy Performance Test,0.0
-2026-06-26,19:00:10,Dummy Performance Test,0.0
+2026-06-26,18:00:00,Dummy Performance Test,0.32
+2026-06-26,18:15:00,Dummy Performance Test,0.40
+2026-06-26,18:30:00,Dummy Performance Test,0.28
+2026-06-26,18:45:00,Dummy Performance Test,0.45
+2026-06-26,19:00:00,Dummy Performance Test,0.35

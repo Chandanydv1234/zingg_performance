@@ -147,27 +147,9 @@ def generate_chart():
     # Legend
     ax.legend(facecolor='#151625', edgecolor='#222332', labelcolor='#ffffff', loc='upper right', framealpha=0.9)
 
-    # Headers & Logo
-    logo_path = "logo.png"
-    if os.path.exists(logo_path):
-        try:
-            import matplotlib.image as mpimg
-            logo_img = mpimg.imread(logo_path)
-            
-            # Create a small axis for the logo at the top left
-            ax_logo = fig.add_axes([0.06, 0.93, 0.06, 0.04])
-            ax_logo.imshow(logo_img)
-            ax_logo.axis('off')
-            
-            # Position the subtitle text just after the logo
-            fig.text(0.13, 0.942, "·  Performance Report", color='#a855f7', fontsize=10.5, alpha=0.85)
-        except Exception as e:
-            print(f"Error drawing logo image: {e}")
-            fig.text(0.06, 0.95, "ZINGG", color='#ffffff', fontsize=15, fontweight='black', alpha=0.95)
-            fig.text(0.125, 0.953, "·  Performance Report", color='#a855f7', fontsize=10.5, alpha=0.85)
-    else:
-        fig.text(0.06, 0.95, "ZINGG", color='#ffffff', fontsize=15, fontweight='black', alpha=0.95)
-        fig.text(0.125, 0.953, "·  Performance Report", color='#a855f7', fontsize=10.5, alpha=0.85)
+    # Headers
+    fig.text(0.06, 0.95, "ZINGG", color='#ffffff', fontsize=15, fontweight='black', alpha=0.95)
+    fig.text(0.125, 0.953, "·  Performance Report", color='#a855f7', fontsize=10.5, alpha=0.85)
     
     today_str = datetime.now().strftime("%Y-%m-%d")
     fig.text(0.94, 0.953, f"Generated: {today_str}", color='#8e8f9e', fontsize=8.5, ha='right')

@@ -5,6 +5,7 @@ import csv
 import time
 import os
 import platform
+import re
 import shutil
 import multiprocessing
 from datetime import date, datetime
@@ -77,6 +78,7 @@ def load_test_config():
 # Load configuration
 config = load_test_config()
 testName = config["testName"]
+test_prefix = re.sub(r'\W+', '_', testName).strip('_').lower()
 zinggScript = config["zinggScript"]
 propertyFile = config["propertyFile"]
 reportFile = config["reportFile"]
@@ -101,9 +103,9 @@ def load_results():
     """Load previous test results if available."""
 
     results = {}
-
+    
     for phase in tests.keys():
-        phase_file = f"{phase}_report.csv"
+        phase_file = f"{test_prefix}_{phase}_report.csv"
 
         if os.path.exists(phase_file) and os.path.getsize(phase_file)>0:
             with open(phase_file, "r") as f:
@@ -124,7 +126,7 @@ def save_results(data):
     current_year = str(date.today().year)
 
     for phase, duration in data["results"].items():
-        phase_file = f"{phase}_report.csv"
+        phase_file = f"{test_prefix}_{phase}_report.csv"
 
         # -----YEARLY ROLLOVER CHECK---
         if os.path.exists(phase_file) and os.path.getsize(phase_file)>0:
@@ -136,7 +138,7 @@ def save_results(data):
                     last_run_year = last_row["date"].split("-")[0]
 
                     if current_year != last_run_year:
-                        archive_file = f"{phase}_report_{last_run_year}.csv"
+                        archive_file = f"{test_prefix}_{phase}_report_{last_run_year}.csv"
                         os.rename(phase_file, archive_file)
                         print(f"Year changed! Archived {phase_file} to {archive_file}")   
 

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import glob
 import json
+import re
 from datetime import datetime
 
 def format_timestamp(row):
@@ -41,39 +42,43 @@ def generate_chart():
         except Exception as e:
             print(f"Error loading config file: {config_path}: {e}")
 
-    # 2. Read report files
-    report_files = sorted(glob.glob("*_report.csv"))
-    if not report_files:
-        print("No performance report files found.")
-        return
-
-    dataframes = {}
-    total_runs = 0
-    for file_path in report_files:
-        phase = os.path.basename(file_path).replace("_report.csv", "")
-        df = pd.read_csv(file_path)
+    # 2. Read report files — keyed by (dataset, phase)
+    KNOWN_PHASES = ["train", "match"]
+    series = {}
+    for file_path in sorted(glob.glob("*_report.csv")):
+        basename = os.path.basename(file_path).replace("_report.csv", "")
+        phase = next((p for p in KNOWN_PHASES if basename == p or basename.endswith(f"_{p}")), None)
+        if phase is None:
+            continue
+        dataset = basename[: -(len(phase) + 1)] if basename != phase else "default"
+        try:
+            df = pd.read_csv(file_path)
+        except Exception as e:
+            print(f"Skipping {file_path}: {e}")
+            continue
         if not df.empty:
             df["timestamp"] = df.apply(format_timestamp, axis=1)
-            dataframes[phase] = df
-            total_runs = max(total_runs, len(df))
+            series[(dataset, phase)] = df
 
-    if not dataframes:
-        print("All report files are empty.")
+    if not series:
+        print("No report data found.")
         return
 
-    # 3. Calculate Run Summary statistics
-    avg_train_sec = 0.0
-    best_train_sec = 0.0
-    if "train" in dataframes and not dataframes["train"].empty:
-        avg_train_sec = dataframes["train"]["duration"].mean() * 60
-        best_train_sec = dataframes["train"]["duration"].min() * 60
+    all_datasets = sorted(set(d for d, _ in series.keys()))
+    total_runs = max(len(df) for df in series.values())
 
-    avg_match_sec = 0.0
-    best_match_sec = 0.0
-    if "match" in dataframes and not dataframes["match"].empty:
-        avg_match_sec = dataframes["match"]["duration"].mean() * 60
-        best_match_sec = dataframes["match"]["duration"].min() * 60
+    # 3. Calculate Run Summary statistics (aggregate across all datasets)
+    def concat_phase(phase_name):
+        frames = [df for (d, p), df in series.items() if p == phase_name]
+        return pd.concat(frames, ignore_index=True) if frames else None
 
+    train_all = concat_phase("train")
+    match_all = concat_phase("match")
+
+    avg_train_sec = (train_all["duration"].mean() * 60) if train_all is not None else 0.0
+    best_train_sec = (train_all["duration"].min() * 60) if train_all is not None else 0.0
+    avg_match_sec = (match_all["duration"].mean() * 60) if match_all is not None else 0.0
+    best_match_sec = (match_all["duration"].min() * 60) if match_all is not None else 0.0
     ratio = (avg_train_sec / avg_match_sec) if avg_match_sec > 0 else 0.0
 
     # 4. Set up the figure & dark styles
@@ -85,50 +90,34 @@ def generate_chart():
     ax = fig.add_subplot(gs[0])
     ax.set_facecolor('#10111d')
 
-    # Color & Line mapping
-    COLOR_MAP = {
-        "train": "#a855f7",  # Purple
-        "match": "#f97316"   # Orange
-    }
-    STYLE_MAP = {
-        "train": ("-", "o"),  # Solid, Circle
-        "match": (":", "s")   # Dotted, Square
-    }
-    DEFAULT_COLORS = ["#06b6d4", "#ec4899", "#10b981", "#3b82f6"]
+    # Color by phase (semantic), line style + marker by dataset
+    PHASE_COLORS = {"train": "#a855f7", "match": "#f97316"}
+    PHASE_ANNOT  = {"train": (8, '#d8b4fe', 'semibold'), "match": (-12, '#ffedd5', 'normal')}
+    DATASET_LINESTYLES = ["-", "--", "-."]
+    DATASET_MARKERS    = ["o", "^",  "s"]
 
-    color_idx = 0
+    dataset_idx = {d: i for i, d in enumerate(all_datasets)}
 
-    # 5. Plot each phase
-    for phase, df in dataframes.items():
-        color = COLOR_MAP.get(phase)
-        if not color:
-            color = DEFAULT_COLORS[color_idx % len(DEFAULT_COLORS)]
-            color_idx += 1
+    # 5. Plot each (dataset, phase) series
+    for (dataset, phase), df in sorted(series.items()):
+        color     = PHASE_COLORS.get(phase, "#06b6d4")
+        idx       = dataset_idx[dataset]
+        linestyle = DATASET_LINESTYLES[idx % len(DATASET_LINESTYLES)]
+        marker    = DATASET_MARKERS[idx % len(DATASET_MARKERS)]
+        label     = phase.capitalize() if len(all_datasets) == 1 else f"{dataset} {phase}"
 
-        linestyle, marker = STYLE_MAP.get(phase, ("-", "d"))
-        
         x_vals = df["timestamp"]
         y_vals = df["duration"]
 
-        # Plot line
-        ax.plot(x_vals, y_vals, color=color, linestyle=linestyle, linewidth=2, 
-                marker=marker, markersize=6, label=f"{phase.capitalize()} Time (min)")
-
-        # Gradient shading under the line
+        ax.plot(x_vals, y_vals, color=color, linestyle=linestyle, linewidth=2,
+                marker=marker, markersize=6, label=f"{label} (min)")
         ax.fill_between(x_vals, y_vals, color=color, alpha=0.08)
 
-        # Annotate points with seconds for 'train' and 'match'
+        offset, annot_color, weight = PHASE_ANNOT.get(phase, (8, '#ffffff', 'normal'))
         for x_coord, y_coord in zip(x_vals, y_vals):
-            duration_sec = y_coord * 60
-            label_text = f"{duration_sec:.0f}s"
-            
-            # Print label above train points
-            if phase == "train":
-                ax.annotate(label_text, (x_coord, y_coord), textcoords="offset points",
-                            xytext=(0, 8), ha='center', color='#d8b4fe', fontsize=8, fontweight='semibold')
-            elif phase == "match":
-                ax.annotate(label_text, (x_coord, y_coord), textcoords="offset points",
-                            xytext=(0, -12), ha='center', color='#ffedd5', fontsize=8)
+            ax.annotate(f"{y_coord * 60:.0f}s", (x_coord, y_coord),
+                        textcoords="offset points", xytext=(0, offset),
+                        ha='center', color=annot_color, fontsize=8, fontweight=weight)
 
     # 6. Customize axes visual design
     ax.set_title("Zingg Performance History", color='#ffffff', fontsize=13, pad=15, fontweight='bold')

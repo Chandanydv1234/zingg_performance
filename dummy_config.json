@@ -9,5 +9,21 @@
   "tests": {
     "train": "{zinggScript} train {propertyFile}",
     "match": "{zinggScript} match {propertyFile}"
+  },
+  "pcSpecs": {
+    "OS": "Ubuntu 22.04 LTS",
+    "CPU": "Intel Core i7-12700K · 12 cores",
+    "RAM": "32 GB DDR5",
+    "Storage": "1 TB NVMe SSD",
+    "Spark": "v3.4.1 | Python 3.10",
+    "Java": "OpenJDK 17"
+  },
+  "dataSpecs": {
+    "Dataset": "Customer Master",
+    "Records": "2,50,000",
+    "Fields": "12 (name, addr, email ...)",
+    "Pairs": "48 labelled pairs",
+    "Blocking": "3 blocking rules",
+    "Model": "Random Forest"
   }
 }

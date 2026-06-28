@@ -159,7 +159,19 @@ def generate_chart():
     pc_keys = ["OS", "CPU", "RAM", "Storage", "Spark", "Java"]
     y_pos = 0.65
     for k in pc_keys:
-        val = pc_specs.get(k, "N/A")
+        val = str(pc_specs.get(k, "N/A"))
+        if k == "Java" and "version" in val.lower():
+            parts = val.split()
+            if len(parts) >= 3:
+                val = f"{parts[0]} {parts[2]}"
+        elif k == "Spark" and "version" in val.lower():
+            match = re.search(r"version\s+([\d\.]+)", val)
+            if match:
+                val = f"Spark {match.group(1)}"
+        
+        if len(val) > 25:
+            val = val[:22] + "..."
+            
         ax_footer.text(0.02, y_pos, f"{k}:", color='#a855f7', fontsize=8.5, fontweight='semibold')
         ax_footer.text(0.11, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
@@ -169,7 +181,10 @@ def generate_chart():
     data_keys = ["Dataset", "Records", "Fields", "Pairs", "Blocking", "Model"]
     y_pos = 0.65
     for k in data_keys:
-        val = data_specs.get(k, "N/A")
+        val = str(data_specs.get(k, "N/A"))
+        if len(val) > 35:
+            val = val[:32] + "..."
+            
         ax_footer.text(0.35, y_pos, f"{k}:", color='#f97316', fontsize=8.5, fontweight='semibold')
         ax_footer.text(0.44, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12

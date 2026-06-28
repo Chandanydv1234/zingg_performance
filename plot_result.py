@@ -144,7 +144,7 @@ def generate_chart():
         ax.spines[spine].set_color('#222332')
 
     
-    ax.legend(facecolor='#151625', edgecolor='#222332', labelcolor='#ffffff', loc='upper right', framealpha=0.9)
+    ax.legend(facecolor='#151625', edgecolor='#222332', labelcolor='#ffffff', loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0.9)
 
     
     fig.text(0.06, 0.95, "ZINGG", color='#ffffff', fontsize=15, fontweight='black', alpha=0.95)

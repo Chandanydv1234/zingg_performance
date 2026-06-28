@@ -92,7 +92,7 @@ def generate_chart():
     best_match_sec = (match_all["duration"].min() * 60) if match_all is not None else 0.0
     ratio = (avg_train_sec / avg_match_sec) if avg_match_sec > 0 else 0.0
     plt.rcParams['font.family'] = 'sans-serif'
-    fig = plt.figure(figsize=(10, 5.5), facecolor='#0b0b12')
+    fig = plt.figure(figsize=(11, 7.5), facecolor='#0b0b12')
     gs = fig.add_gridspec(2, 1, height_ratios=[5, 2], hspace=0.3)
     ax = fig.add_subplot(gs[0])
     ax.set_facecolor('#10111d')
@@ -141,7 +141,7 @@ def generate_chart():
         ax.spines[spine].set_color('#222332')
 
     
-    ax.legend(facecolor='#151625', edgecolor='#222332', labelcolor='#ffffff', loc='upper left', bbox_to_anchor=(1.02, 1), framealpha=0.9)
+    ax.legend(facecolor='#151625', edgecolor='#222332', labelcolor='#ffffff', loc='upper right', framealpha=0.9)
 
     
     fig.text(0.06, 0.95, "ZINGG", color='#ffffff', fontsize=15, fontweight='black', alpha=0.95)
@@ -161,21 +161,21 @@ def generate_chart():
     for k in pc_keys:
         val = pc_specs.get(k, "N/A")
         ax_footer.text(0.02, y_pos, f"{k}:", color='#a855f7', fontsize=8.5, fontweight='semibold')
-        ax_footer.text(0.12, y_pos, val, color='#cbd5e1', fontsize=8.5)
+        ax_footer.text(0.11, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
 
     # Data Specs
-    ax_footer.text(0.38, 0.85, "Data Specs", color='#ffffff', fontsize=10.5, fontweight='bold')
+    ax_footer.text(0.35, 0.85, "Data Specs", color='#ffffff', fontsize=10.5, fontweight='bold')
     data_keys = ["Dataset", "Records", "Fields", "Pairs", "Blocking", "Model"]
     y_pos = 0.65
     for k in data_keys:
         val = data_specs.get(k, "N/A")
-        ax_footer.text(0.38, y_pos, f"{k}:", color='#f97316', fontsize=8.5, fontweight='semibold')
-        ax_footer.text(0.48, y_pos, val, color='#cbd5e1', fontsize=8.5)
+        ax_footer.text(0.35, y_pos, f"{k}:", color='#f97316', fontsize=8.5, fontweight='semibold')
+        ax_footer.text(0.44, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
 
     # Run Summary
-    ax_footer.text(0.74, 0.85, "Run Summary", color='#ffffff', fontsize=10.5, fontweight='bold')
+    ax_footer.text(0.76, 0.85, "Run Summary", color='#ffffff', fontsize=10.5, fontweight='bold')
     summary_items = [
         ("Total Runs", f"{total_runs}"),
         ("Avg Train", format_duration(avg_train_sec)),
@@ -186,8 +186,8 @@ def generate_chart():
     ]
     y_pos = 0.65
     for label, val in summary_items:
-        ax_footer.text(0.74, y_pos, f"{label}:", color='#a855f7', fontsize=8.5, fontweight='semibold')
-        ax_footer.text(0.85, y_pos, val, color='#cbd5e1', fontsize=8.5)
+        ax_footer.text(0.76, y_pos, f"{label}:", color='#a855f7', fontsize=8.5, fontweight='semibold')
+        ax_footer.text(0.87, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
 
     # Save output image

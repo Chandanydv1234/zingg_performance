@@ -91,11 +91,8 @@ def generate_chart():
     avg_match_sec = (match_all["duration"].mean() * 60) if match_all is not None else 0.0
     best_match_sec = (match_all["duration"].min() * 60) if match_all is not None else 0.0
     ratio = (avg_train_sec / avg_match_sec) if avg_match_sec > 0 else 0.0
-
     plt.rcParams['font.family'] = 'sans-serif'
-    fig = plt.figure(figsize=(11, 7.5), facecolor='#0b0b12')
-    
-
+    fig = plt.figure(figsize=(10, 5.5), facecolor='#0b0b12')
     gs = fig.add_gridspec(2, 1, height_ratios=[5, 2], hspace=0.3)
     ax = fig.add_subplot(gs[0])
     ax.set_facecolor('#10111d')

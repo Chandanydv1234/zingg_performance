@@ -37,6 +37,7 @@ def generate_chart():
             config_path = sorted(configs)[0]
     pc_specs = {}
     data_specs = {}
+    report_file = ""
     
     if os.path.exists(config_path):
         try:
@@ -54,10 +55,11 @@ def generate_chart():
         except Exception as e:
             print(f"Error loading config file: {config_path}: {e}")
 
-    # 2. Read report files — keyed by (dataset, phase)
     KNOWN_PHASES = ["train", "match"]
     series = {}
-    for file_path in sorted(glob.glob("*_report.csv")):
+    report_dir = os.path.dirname(report_file) if report_file else ""
+    csv_pattern = os.path.join(report_dir, "*_report.csv") if report_dir else "*_report.csv"
+    for file_path in sorted(glob.glob(csv_pattern)):
         basename = os.path.basename(file_path).replace("_report.csv", "")
         phase = next((p for p in KNOWN_PHASES if basename == p or basename.endswith(f"_{p}")), None)
         if phase is None:
@@ -134,6 +136,9 @@ def generate_chart():
     ax.tick_params(axis='both', colors='#8e8f9e', labelsize=8.5)
     ax.grid(True, color='#222332', linestyle=':', linewidth=0.8)
 
+    max_duration = max(df["duration"].max() for df in series.values())
+    ax.set_ylim(0, max_duration * 1.3)
+
     
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
@@ -150,11 +155,9 @@ def generate_chart():
     today_str = datetime.now().strftime("%Y-%m-%d")
     fig.text(0.94, 0.953, f"Generated: {today_str}", color='#8e8f9e', fontsize=8.5, ha='right')
 
-    # 7. Render Footer Specs Section
     ax_footer = fig.add_subplot(gs[1])
     ax_footer.axis('off')
 
-    # PC Specs
     ax_footer.text(0.02, 0.85, "PC Specs", color='#ffffff', fontsize=10.5, fontweight='bold')
     pc_keys = ["OS", "CPU", "RAM", "Storage", "Spark", "Java"]
     y_pos = 0.65
@@ -176,7 +179,6 @@ def generate_chart():
         ax_footer.text(0.11, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
 
-    # Data Specs
     ax_footer.text(0.35, 0.85, "Data Specs", color='#ffffff', fontsize=10.5, fontweight='bold')
     data_keys = ["Dataset", "Records", "Fields", "Pairs", "Blocking", "Model"]
     y_pos = 0.65
@@ -189,7 +191,6 @@ def generate_chart():
         ax_footer.text(0.44, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
 
-    # Run Summary
     ax_footer.text(0.76, 0.85, "Run Summary", color='#ffffff', fontsize=10.5, fontweight='bold')
     summary_items = [
         ("Total Runs", f"{total_runs}"),
@@ -205,10 +206,15 @@ def generate_chart():
         ax_footer.text(0.87, y_pos, val, color='#cbd5e1', fontsize=8.5)
         y_pos -= 0.12
 
-    # Save output image
-    plt.savefig("performance_chart.png", dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
+    chart_dir = os.path.dirname(report_file) if report_file else ""
+    if chart_dir:
+        os.makedirs(chart_dir, exist_ok=True)
+        chart_path = os.path.join(chart_dir, "performance_chart.png")
+    else:
+        chart_path = "performance_chart.png"
+    plt.savefig(chart_path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close()
-    print("Performance chart successfully updated at performance_chart.png!")
+    print(f"Performance chart successfully updated at {chart_path}!")
 
 if __name__ == "__main__":
     generate_chart()

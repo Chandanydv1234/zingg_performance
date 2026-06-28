@@ -52,7 +52,9 @@ def detect_pc_specs():
     except Exception:
         specs["Storage"] = "N/A"
     try:
+        
         r = subprocess.run(["spark-submit", "--version"], capture_output=True, text=True, timeout=10)
+        #spark often prints out it version through the error stream, hence(stdout+stderr)
         for line in (r.stderr + r.stdout).splitlines():
             if "version" in line.lower():
                 specs["Spark"] = line.strip()
@@ -103,9 +105,13 @@ def load_results():
     """Load previous test results if available."""
 
     results = {}
+    report_dir = os.path.dirname(reportFile) if reportFile else ""
     
     for phase in tests.keys():
-        phase_file = f"{test_prefix}_{phase}_report.csv"
+        if report_dir:
+            phase_file = os.path.join(report_dir, f"{test_prefix}_{phase}_report.csv")
+        else:
+            phase_file = f"{test_prefix}_{phase}_report.csv"
 
         if os.path.exists(phase_file) and os.path.getsize(phase_file)>0:
             with open(phase_file, "r") as f:
@@ -124,9 +130,14 @@ def save_results(data):
     """Save current test results to the report file"""
 
     current_year = str(date.today().year)
+    report_dir = os.path.dirname(reportFile) if reportFile else ""
 
     for phase, duration in data["results"].items():
-        phase_file = f"{test_prefix}_{phase}_report.csv"
+        if report_dir:
+            os.makedirs(os.path.abspath(report_dir), exist_ok=True)
+            phase_file = os.path.join(report_dir, f"{test_prefix}_{phase}_report.csv")
+        else:
+            phase_file = f"{test_prefix}_{phase}_report.csv"
 
         # -----YEARLY ROLLOVER CHECK---
         if os.path.exists(phase_file) and os.path.getsize(phase_file)>0:

@@ -9,7 +9,8 @@ Zingg OSS 0.7.0 entity-resolution run on a 30M-record synthetic FEBRL dataset vi
 |---|---|
 | `config/` | Zingg config used for the run (credentials redacted) |
 | `model/301/` | Trained Zingg model |
-| `input/` | Input data — `FEBRL_NONULL`, 29.3M rows (gzip CSV parts) |
+| `input/` | Input data — `FEBRL_NONULL`, 29.3M rows, no nulls (gzip CSV parts) |
+| `input_withnull/` | Full 30M source dataset **with** blank-name (null) rows (gzip CSV parts) |
 | `output/` | Match output — 29.3M rows (gzip CSV parts) |
 
 ## Run summary
